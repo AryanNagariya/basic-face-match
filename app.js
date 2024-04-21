@@ -9,6 +9,7 @@
  */
 
 // Setup
+var path = require('path');
 const { ChromaClient } = require("chromadb");
 const fs = require('fs');
 const tf = require('@tensorflow/tfjs-node');
@@ -69,11 +70,12 @@ async function initializeFaceModels() {
  * Given a list of images, index their embeddings
  * within the ChromaDB collection.
  * 
- * @param {*} image 
- * @param {*} collection 
+ * @param {*} pathName Path to image
+ * @param {*} image Image filename
+ * @param {*} collection ChromaDB collection
  */
-async function indexAllFaces(image, collection) {
-  const embeddings = await getEmbeddings(image);
+async function indexAllFaces(pathName, image, collection) {
+  const embeddings = await getEmbeddings(pathName);
 
   var success = true;
   var inx = 1;
@@ -141,22 +143,45 @@ const client = new ChromaClient();
 initializeFaceModels()
 .then(async () => {
 
-  // Just to show the comparison using two images in FaceAPI
-  compareImages(documents[0], documents[1])
-
   const collection = await client.getOrCreateCollection({
     name: "face-api",
     embeddingFunction: null,
+    // L2 here is squared L2, not Euclidean distance
     metadata: { "hnsw:space": "l2" },
   });
 
-  await indexAllFaces(documents[0], collection);
-
-  console.log('\nTop-k indexed matches to ' + documents[1] + ':');
-  for (var item of await findTopKMatches(collection, documents[1], 5)) {
-    for (var i = 0; i < item.ids.length; i++) {
-      console.log(item.ids[i] + " (Euclidean distance = " + Math.sqrt(item.distances[i]) + ") in " + item.documents[i]);
+  console.info("Looking for files");
+  const promises = [];
+  // Loop through all the files in the images directory
+  fs.readdir("images", function (err, files) {
+    if (err) {
+      console.error("Could not list the directory.", err);
+      process.exit(1);
     }
-  }
+
+    files.forEach(function (file, index) {
+      console.info("Adding task for " + file + " to index.");
+      promises.push(indexAllFaces(path.join("images", file), file, collection));
+    });
+    console.info("Done adding promises, waiting for completion.");
+    Promise.all(promises)
+    .then(async (results) => {
+      console.info("All images indexed.");
+  
+      const search = 'query.jpg';
+  
+      console.log('\nTop-k indexed matches to ' + search + ':');
+      for (var item of await findTopKMatches(collection, search, 5)) {
+        for (var i = 0; i < item.ids[0].length; i++) {
+          console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
+        }
+      }
+    
+    })
+    .catch((err) => {
+      console.error("Error indexing images:", err);
+    });
+    });
+
 });
 
