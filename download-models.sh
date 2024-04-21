@@ -15,4 +15,3 @@ wget  https://github.com/justadudewhohacks/face-api.js/raw/master/weights/ssd_mo
 cd ..
 wget https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Tom_Cruise_by_Gage_Skidmore_2.jpg/1280px-Tom_Cruise_by_Gage_Skidmore_2.jpg -O query.jpg
 mkdir images
-cd images

@@ -15,9 +15,6 @@ const fs = require('fs');
 const tf = require('@tensorflow/tfjs-node');
 const faceapi = require('@vladmandic/face-api');
 
-const documents = [ 'sample1.jpg', 'sample2.jpg'];
-
-
 
 let optionsSSDMobileNet;
 
