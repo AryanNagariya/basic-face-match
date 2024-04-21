@@ -19,21 +19,13 @@ Then:
 
 ## Images Download
 
-Now we'll make use of the following:
+The `download-models.sh` script should download a .zip file with IMDB images. This was assembled
+from two sources:
 
 * [names.csv](https://penn-cis545-files.s3.amazonaws.com/names.csv), which is the original list of actor names from the homeworks. You can update this with whatever IMDB actors you have.
 * [IMDB-Face.csv](https://penn-cis545-files.s3.amazonaws.com/IMDb-Face.csv), from https://github.com/fwang91/IMDb-Face.
 
-You can simply:
-
-`wget ` to get a zipfile.
-
-```
-wget https://penn-cis545-files.s3.amazonaws.com/imdb-faces.zip
-cd images
-unzip ../imdb-faces.zip
-cd ..
-```
+Where we ran `python get-images.py` to join the overlapping `nconst`s and downloaded associated images. If you have a larger subset of names from IMDB, you can re-run this step yourself and get a lot more images!
 
 ## Creating Your ChromaDB Instance
 
@@ -43,3 +35,8 @@ In a separate Docker Terminal, from the same directory, run `node app.js` and le
 
 Take a look at the functions in [app.js](app.js), to see examples of computing an embedding from an image, opening a connection to Chroma, indexing in Chroma, and looking up an entry in Chroma.
 
+* `initializeFaceModels` sets up the Face-API (and TensorFlow-JS) to compute embeddings
+* `getEmbeddings` uses the Node Face-API to find faces within an image file and return a list of embeddings
+* `compareImages` uses the Node Face-API to compare the faces within two image files
+* `indexAllFaces` takes an image, finds all faces and computes their embeddings, and puts these into ChromaDB
+* `findTopKMatches` uses ChromaDB to find the most similar embedding to that of a supplied image
