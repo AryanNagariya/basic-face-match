@@ -30,9 +30,13 @@ Where we ran `python get-images.py` to join the overlapping `nconst`s and downlo
 
 ## Creating Your ChromaDB Instance
 
+We will use ChromaDB for a very simple purpose:  we'll index (as keys) embeddings for (as values) the contents of files (whose names will be associated with the embeddings as ChromaDB metadata).  Given an embedding $e_1$ (computed from a function below!) we can search for $(e,v)$ pairs where $e$ is similar to $e_1$ and $v$ represents the metadata associated with $e$. In that metadata will be a filename.
+
 Launch ChromaDB in Docker, via `chroma run --host 0.0.0.0`.
 
 In a separate Docker Terminal, from the same directory, run `node app.js` and let it index everything!
+
+## Useful functions
 
 Take a look at the functions in [app.js](app.js), to see examples of computing an embedding from an image, opening a connection to Chroma, indexing in Chroma, and looking up an entry in Chroma.
 
