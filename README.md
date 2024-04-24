@@ -7,7 +7,8 @@ We will leverage ChromaDB as well.
 
 You will need to install some more packages to use TensorFlow for face detection.
 
-* `apt install -y libhdf5-serial-dev`
+* `apt update`
+* `apt install -y libhdf5-serial-dev pkg-config`
 * `pip install h5py`
 * `pip install tensorflow`
 
