@@ -39,17 +39,27 @@ const getArray = (array) => {
  * @returns List of detected faces' embeddings
  */
 async function getEmbeddings(imageFile) {
-  const buffer = fs.readFileSync(imageFile);
-  const tensor = tf.node.decodeImage(buffer, 3);
+  console.log(`Checking existence of file: ${imageFile}`);
+  if (!fs.existsSync(imageFile)) {
+    throw new Error(`File not found: ${imageFile}`);
+  }
+  
+  try {
+    const buffer = fs.readFileSync(imageFile);
+    const tensor = tf.node.decodeImage(buffer, 3);
 
-  const faces = await faceapi.detectAllFaces(tensor, optionsSSDMobileNet)
-    .withFaceLandmarks()
-    .withFaceDescriptors();
-  tf.dispose(tensor);
+    const faces = await faceapi.detectAllFaces(tensor, optionsSSDMobileNet)
+      .withFaceLandmarks()
+      .withFaceDescriptors();
+    tf.dispose(tensor);
 
-  // For each face, get the descriptor and convert to a standard array
-  return faces.map((face) => getArray(face.descriptor));
-};
+    return faces.map(face => getArray(face.descriptor));
+  } catch (error) {
+    console.error(`Error in getEmbeddings: ${error}`);
+    throw error; // Rethrow to handle it further up the call stack
+  }
+}
+
 
 async function initializeFaceModels() {
   console.log("Initializing FaceAPI...");
@@ -103,6 +113,7 @@ async function indexAllFaces(pathName, image, collection) {
 
 async function findTopKMatches(collection, image, k) {
   var ret = [];
+  console.log("Goes into Find Top K Matches!")
 
   var queryEmbeddings = await getEmbeddings(image);
   for (var queryEmbedding of queryEmbeddings) {
