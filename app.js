@@ -131,7 +131,7 @@ async function findTopKMatches(collection, image, k) {
 }
 
 /**
- * Example: Compare two images in files directly using FaceAPI
+ * Example: Compare two images in files directly using FaceAPI!
  * 
  * @param {*} file1 
  * @param {*} file2 
