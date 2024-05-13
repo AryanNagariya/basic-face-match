@@ -39,27 +39,17 @@ const getArray = (array) => {
  * @returns List of detected faces' embeddings
  */
 async function getEmbeddings(imageFile) {
-  console.log(`Checking existence of file: ${imageFile}`);
-  if (!fs.existsSync(imageFile)) {
-    throw new Error(`File not found: ${imageFile}`);
-  }
-  
-  try {
-    const buffer = fs.readFileSync(imageFile);
-    const tensor = tf.node.decodeImage(buffer, 3);
+  const buffer = fs.readFileSync(imageFile);
+  const tensor = tf.node.decodeImage(buffer, 3);
 
-    const faces = await faceapi.detectAllFaces(tensor, optionsSSDMobileNet)
-      .withFaceLandmarks()
-      .withFaceDescriptors();
-    tf.dispose(tensor);
+  const faces = await faceapi.detectAllFaces(tensor, optionsSSDMobileNet)
+    .withFaceLandmarks()
+    .withFaceDescriptors();
+  tf.dispose(tensor);
 
-    return faces.map(face => getArray(face.descriptor));
-  } catch (error) {
-    console.error(`Error in getEmbeddings: ${error}`);
-    throw error; // Rethrow to handle it further up the call stack
-  }
-}
-
+  // For each face, get the descriptor and convert to a standard array
+  return faces.map((face) => getArray(face.descriptor));
+};
 
 async function initializeFaceModels() {
   console.log("Initializing FaceAPI...");
@@ -113,22 +103,34 @@ async function indexAllFaces(pathName, image, collection) {
 
 async function findTopKMatches(collection, image, k) {
   var ret = [];
-  console.log("Goes into Find Top K Matches!")
+  console.log('Received image for processing:', image);
 
-  var queryEmbeddings = await getEmbeddings(image);
-  for (var queryEmbedding of queryEmbeddings) {
-    var results = await collection.query({
-      queryEmbeddings: queryEmbedding,
-      // By default embeddings aren't returned -- if you want
-      // them you need to uncomment this line
-      // include: ['embeddings', 'documents', 'metadatas'],
-      nResults: k
-    });
+  try {
+    var queryEmbeddings = await getEmbeddings(image);
+    console.log('Embeddings obtained:', queryEmbeddings.length);
 
-    ret.push(results);
+    for (var queryEmbedding of queryEmbeddings) {
+      console.log('Querying collection with embedding:', queryEmbedding);
+      var results = await collection.query({
+        queryEmbeddings: queryEmbedding,
+        // By default embeddings aren't returned -- if you want
+        // them you need to uncomment this line
+        // include: ['embeddings', 'documents', 'metadatas'],
+        nResults: k
+      });
+
+      console.log('Results obtained for embedding:', results);
+      ret.push(results);
+    }
+  } catch (error) {
+    console.error('Error during processing:', error);
+    throw error; 
   }
+
+  console.log('All results:', ret);
   return ret;
 }
+
 
 /**
  * Example: Compare two images in files directly using FaceAPI!
