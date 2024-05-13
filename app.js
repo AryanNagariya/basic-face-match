@@ -107,7 +107,7 @@ async function findTopKMatches(collection, image, k) {
 
   try {
     var queryEmbeddings = await getEmbeddings(image);
-    console.log('Embeddings obtained:', queryEmbeddings.length);
+    console.log('Embeddings got:', queryEmbeddings.length);
 
     for (var queryEmbedding of queryEmbeddings) {
       console.log('Querying collection with embedding:', queryEmbedding);
